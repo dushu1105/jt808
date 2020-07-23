@@ -1,8 +1,8 @@
 package webapi
 
 import (
-	"808/jtnet"
-	"808/protocal"
+	"github.com/dushu1105/jt808/jtnet"
+	"github.com/dushu1105/jt808/protocal"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"

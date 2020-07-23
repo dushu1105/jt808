@@ -1,8 +1,8 @@
 package jtnet
 
 import (
-	"808/protocal"
-	"808/utils"
+	"github.com/dushu1105/jt808/protocal"
+	"github.com/dushu1105/jt808/utils"
 	"bufio"
 	"errors"
 	"fmt"

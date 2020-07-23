@@ -1,7 +1,7 @@
 package protocal
 
 import (
-	"808/common"
+	"github.com/dushu1105/jt808/common"
 	"bytes"
 	"fmt"
 	"github.com/pkg/errors"

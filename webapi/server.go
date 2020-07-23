@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"808/jtnet"
+	"github.com/dushu1105/jt808/jtnet"
 )
 
 const SERVER_KEY = "808server"

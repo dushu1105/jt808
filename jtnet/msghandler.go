@@ -1,7 +1,7 @@
 package jtnet
 
 import (
-	"808/protocal"
+	"github.com/dushu1105/jt808/protocal"
 	"fmt"
 	"strconv"
 )

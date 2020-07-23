@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"808/common"
-	"808/protocal"
+	"github.com/dushu1105/jt808/common"
+	"github.com/dushu1105/jt808/protocal"
 )
 
 func BufioRead(name string, conn net.Conn) {

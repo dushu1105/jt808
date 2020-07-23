@@ -1,7 +1,7 @@
 package webapi
 
 import (
-	"808/jtnet"
+	"github.com/dushu1105/jt808/jtnet"
 )
 
 type JtCommonRequet struct {

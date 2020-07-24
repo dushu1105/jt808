@@ -406,7 +406,7 @@ func (t *TPosWarningFlag) Show(){
 	fmt.Println("报警信息：", s)
 }
 
-func (t *TPositionHandler) Do(msg *JT808Msg) (*JT808Msg, error) {
+func (t *TPositionHandler) Do(msg *JT808Msg) (*Jt808ResultMsg, error) {
 	err := t.Parse(msg.Body)
 	if err != nil{
 		return nil, err
@@ -423,8 +423,11 @@ func (t *TPositionHandler) Do(msg *JT808Msg) (*JT808Msg, error) {
 		l += offset
 	}
 
-
-	return nil, err
+	var r CommonResp
+	r.Id = msg.Header.Id
+	r.Seq = msg.Header.Seq
+	r.Result = 0
+	return &Jt808ResultMsg{Result:r}, err
 }
 
 type PosAddtion struct{

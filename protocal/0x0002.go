@@ -6,14 +6,14 @@ type HeartBeatHandler struct {
 	BaseHandler
 }
 
-func (h *HeartBeatHandler) Do(msg *JT808Msg) (*JT808Msg, error) {
+func (h *HeartBeatHandler) Do(msg *JT808Msg) (*Jt808ResultMsg, error) {
 	var err error
 
-	v := CommonRespHandler{Seq:msg.Header.Seq, Result:0}
+	v := CommonResp{Seq: msg.Header.Seq, Result:0}
 	ret, err := v.Packet()
 	if err != nil{
 		return nil, err
 	}
 
-	return msg.CopyAndSet(PCommonResponse, ret), err
+	return &Jt808ResultMsg{Msg:msg.CopyAndSet(PCommonResponse, ret), NeedFeedBack:true}, err
 }

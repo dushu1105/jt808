@@ -33,8 +33,8 @@ func Time() [6]byte {
 	return r
 }
 
-func (t *TQueryTimeHandler) Do(msg *JT808Msg) (*JT808Msg, error) {
+func (t *TQueryTimeHandler) Do(msg *JT808Msg) (*Jt808ResultMsg, error) {
 	var err error
 	r := Time()
-	return msg.CopyAndSet(PQueryTimeResponse, r[:]), err
+	return &Jt808ResultMsg{Msg:msg.CopyAndSet(PQueryTimeResponse, r[:]), NeedFeedBack:true}, err
 }

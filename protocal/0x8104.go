@@ -118,7 +118,7 @@ func (t *TQueryParamHandler) Show(){
 	}
 }
 
-func (t *TQueryParamHandler) Do(msg *JT808Msg) (*JT808Msg, error) {
+func (t *TQueryParamHandler) Do(msg *JT808Msg) (*Jt808ResultMsg, error) {
 	err := t.Parse(msg.Body)
 	if err != nil{
 		return nil, err
@@ -127,5 +127,9 @@ func (t *TQueryParamHandler) Do(msg *JT808Msg) (*JT808Msg, error) {
 	//todo param
 	t.Show()
 
-	return nil, nil
+	var r CommonResp
+	r.Id = msg.Header.Id
+	r.Seq = msg.Header.Seq
+	r.Result = 0
+	return &Jt808ResultMsg{Result:r}, nil
 }

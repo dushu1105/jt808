@@ -64,4 +64,5 @@ func (t *TDriverInfoHandler) Show(){
 	if t.Result == 0 {
 		fmt.Println(t)
 	}
+	//save to somewhere
 }

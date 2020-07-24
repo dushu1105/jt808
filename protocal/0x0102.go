@@ -31,7 +31,7 @@ func (t *TVerifyHandler2013) JT808Msg() byte{
 	return 0
 }
 
-func (t *TVerifyHandler2013) Do(msg *JT808Msg) (*JT808Msg, error) {
+func (t *TVerifyHandler2013) Do(msg *JT808Msg) (*Jt808ResultMsg, error) {
 	if msg.Header.Ver == 1 {
 
 	}
@@ -42,13 +42,13 @@ func (t *TVerifyHandler2013) Do(msg *JT808Msg) (*JT808Msg, error) {
 
 	r := t.JT808Msg()
 
-	v := CommonRespHandler{Seq:msg.Header.Seq, Result:r}
+	v := CommonResp{Seq: msg.Header.Seq, Result:r}
 	ret, err := v.Packet()
 	if err != nil{
 		return nil, err
 	}
 
-	return msg.CopyAndSet(PCommonResponse, ret), err
+	return &Jt808ResultMsg{Msg:msg.CopyAndSet(PCommonResponse, ret), NeedFeedBack:true}, err
 }
 
 type TVerifyHandler2019 struct {
@@ -71,7 +71,7 @@ func (t *TVerifyHandler2019) JT808Msg() byte{
 }
 
 
-func (t *TVerifyHandler2019) Do(msg *JT808Msg) (*JT808Msg, error) {
+func (t *TVerifyHandler2019) Do(msg *JT808Msg) (*Jt808ResultMsg, error) {
 	if msg.Header.Ver == 1 {
 
 	}
@@ -82,11 +82,11 @@ func (t *TVerifyHandler2019) Do(msg *JT808Msg) (*JT808Msg, error) {
 
 	r := t.JT808Msg()
 
-	v := CommonRespHandler{Seq:msg.Header.Seq, Result:r}
+	v := CommonResp{Seq: msg.Header.Seq, Result:r}
 	ret, err := v.Packet()
 	if err != nil{
 		return nil, err
 	}
 
-	return msg.CopyAndSet(PCommonResponse, ret), err
+	return &Jt808ResultMsg{Msg:msg.CopyAndSet(PCommonResponse, ret), NeedFeedBack:true}, err
 }

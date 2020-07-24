@@ -7,7 +7,7 @@ import (
 
 const PStreamRequest = 0x9101
 
-type PStreamReqHandler struct {
+type PStreamReq struct {
 	IPLen byte
 	Ip string `ref:"IPLen"`
 	TcpPort uint16
@@ -17,7 +17,7 @@ type PStreamReqHandler struct {
 	StreamType byte //0主码流，1子码流
 }
 
-func (p *PStreamReqHandler) Packet() ([]byte, error){
+func (p *PStreamReq) Packet() ([]byte, error){
 	buf := new(bytes.Buffer)
 	err := common.WriteStruct(buf, common.BigEndian, p)
 	if err != nil {

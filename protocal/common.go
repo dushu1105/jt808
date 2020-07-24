@@ -9,13 +9,13 @@ import (
 )
 
 type Handler interface {
-	Do(msg *JT808Msg) (*JT808Msg, error)
+	Do(msg *JT808Msg) (*Jt808ResultMsg, error)
 	Send([]byte) error
 }
 
 type BaseHandler struct{}
 
-func (bh *BaseHandler) Do(msg *JT808Msg) (*JT808Msg, error) {
+func (bh *BaseHandler) Do(msg *JT808Msg) (*Jt808ResultMsg, error) {
 	return nil, nil
 }
 
@@ -24,6 +24,12 @@ func (bh *BaseHandler) Send([] byte) error {
 }
 
 const JT808Sign = 0x7e
+
+type Jt808ResultMsg struct{
+	NeedFeedBack bool
+	Msg *JT808Msg
+	Result CommonResp
+}
 
 type JT808Msg struct {
 	ConnId uint32

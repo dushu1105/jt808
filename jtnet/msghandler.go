@@ -17,7 +17,7 @@ func NewMsgHandle() *MsgHandle {
 }
 
 //马上以非阻塞方式处理消息
-func (mh *MsgHandle) DoMsgHandler(msg *protocal.JT808Msg) (*protocal.JT808Msg, error) {
+func (mh *MsgHandle) DoMsgHandler(msg *protocal.JT808Msg) (*protocal.Jt808ResultMsg, error) {
 	requestId := uint32(msg.Header.Id)
 	if msg.Header.Ver == 1 {
 		requestId |= 0x10000

@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"github.com/dushu1105/jt808/protocal"
 	"net"
 	"os"
-	"github.com/dushu1105/jt808/common"
-	"github.com/dushu1105/jt808/protocal"
+	"time"
 )
 
 func BufioRead(name string, conn net.Conn) {
@@ -16,19 +16,15 @@ func BufioRead(name string, conn net.Conn) {
 
 func downStream(name string, conn net.Conn) {
 	var err error
-	p := protocal.TRegistReqHandler{
+	p := protocal.TRegistReqHandler2013{
 		Provice:     1,
 		City:        2,
 		Color:       3,
 	}
-	copy(p.Manu[:], "chinaa")
-	copy(p.TType[:], "abc1234567890")
-	copy(p.TId[:], "987654321")
-	p.Licence, err = common.Utf8ToGbk([]byte("京p12345"))
-	if err != nil{
-		fmt.Println(err)
-		return
-	}
+	p.Manu = "chinaa"
+	p.TType = "abc1234567890"
+	p.TId = "987654321"
+	p.Licence = "京p12345"
 
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.BigEndian, p.Provice)
@@ -40,21 +36,21 @@ func downStream(name string, conn net.Conn) {
 	binary.Write(buf, binary.BigEndian, p.Licence)
 	data := buf.Bytes()
 
-	a := common.JT808HeaderAttr{
+	a := protocal.JT808HeaderAttr{
 		FragFlag:    0,
 		EncryptType: 0,
 		BodyLen:     uint16(len(data)),
 	}
 
-	h := common.JT808Header{
+	h := protocal.JT808Header{
 		Id:   0x0004,
-		Attr: a.Packet(),
+		Attr: a,
 		Seq:  1,
 	}
 
-	copy(h.Sim[:], common.DEC2BCD("13911111111"))
+	h.Sim = "13911111111"
 
-	j := common.JT808Msg{
+	j := protocal.JT808Msg{
 		Header:      &h,
 		IsCompleted: false,
 		Body:        data,
@@ -112,12 +108,13 @@ func main() {
 	//3秒之后发起测试请求，给服务端开启服务的机会
 	//time.Sleep(3 * time.Second)
 
-	conn, err := net.Dial("tcp", "127.0.0.1:8999")
+	conn, err := net.Dial("tcp", "127.0.0.1:808")
 	if err != nil {
 		fmt.Println("client start err, exit!")
 		return
 	}
-
+	time.Sleep(3000 * time.Second)
+	return
 	fname := os.Args[2]
 	down := os.Args[1]
 	fmt.Println("arg,", fname)

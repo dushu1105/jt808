@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"sync"
+	"time"
 )
 
 type Connection struct {
@@ -29,6 +30,8 @@ type Connection struct {
 	//有缓冲管道，用于读、写两个goroutine之间的消息通信
 	msgBuffChan chan []byte
 
+	heartBeatResetChan chan bool
+
 	//链接属性
 	property map[string]interface{}
 	//保护链接属性修改的锁
@@ -40,6 +43,14 @@ type Connection struct {
 	TerminalVer uint8
 	WW           *bufio.Writer
 	NextSeq      uint16
+	responseResult  map[uint16]map[uint16]RespResult
+	TcpTimeout   int64
+	HeartBeatTimeout int64
+}
+
+type RespResult struct {
+	t int64
+	result byte
 }
 
 //创建连接的方法
@@ -56,12 +67,43 @@ func NewConntion(server *Server, conn *net.TCPConn, connID uint32, msgHandler *M
 		msgBuffChan:  make(chan []byte, utils.GlobalObject.MaxMsgChanLen),
 		property:     make(map[string]interface{}),
 		Buf:          make([]byte, 0),
+		responseResult: make(map[uint16]map[uint16]RespResult),
+		TcpTimeout: -1,
+		HeartBeatTimeout: -1,
+		heartBeatResetChan: make(chan bool, 1),
 	}
 
 	//c.IsHaiKangHeader = true
 	//将新创建的Conn添加到链接管理中
 	c.TcpServer.GetConnMgr().Add(c)
 	return c
+}
+
+func (c *Connection) StartHeartBeater(){
+	fmt.Println("[HeartBeater Goroutine is running]")
+	defer fmt.Println(c.RemoteAddr().String(), "[conn HeartBeater exit!]")
+
+	t := time.Duration(36000)
+	for {
+		select {
+		case <-time.After(t * time.Second):
+			if c.HeartBeatTimeout > 0{
+				fmt.Println(c.RemoteAddr().String(), "[conn HeartBeater timeout!]")
+				c.Stop()
+			}
+		case <-c.heartBeatResetChan:
+			if c.HeartBeatTimeout > 0{
+				t = time.Duration(c.HeartBeatTimeout)
+			} else {
+				t = time.Duration(36000)
+			}
+
+			break
+		case <-c.ExitBuffChan:
+			return
+		}
+	}
+
 }
 
 /*
@@ -86,10 +128,6 @@ func (c *Connection) StartWriter() {
 			return
 		}
 	}
-}
-
-func BCD2DEC(bcd uint8) uint8 {
-	return (bcd - (bcd>>4)*6)
 }
 
 func splitPackage(data []byte) [][2]int {
@@ -140,6 +178,10 @@ func (c *Connection) StartReader() {
 			}
 		}
 
+		if c.HeartBeatTimeout > 0 {
+			c.heartBeatResetChan<-true
+		}
+
 		dataArrayPos := splitPackage(data)
 		var begin, end int
 		for _, posArray := range dataArrayPos {
@@ -170,12 +212,13 @@ func (c *Connection) StartReader() {
 				return
 			}
 
-			if ret == nil{
+			if !ret.NeedFeedBack{
 				//表明不需要回数据
+				c.SetRespResult(ret.Result.Id, ret.Result.Seq, ret.Result.Result)
 				continue
 			}
 
-			data, err = ret.Packet()
+			data, err = ret.Msg.Packet()
 			if err != nil {
 				jtMsg.Print("结果打包 有错，退出", err)
 				return
@@ -197,6 +240,7 @@ func (c *Connection) StartReader() {
 func (c *Connection) Start() {
 	go c.StartReader()
 	go c.StartWriter()
+	go c.StartHeartBeater()
 	//按照用户传递进来的创建连接时需要处理的业务，执行钩子方法
 	c.TcpServer.CallOnConnStart(c)
 }
@@ -215,7 +259,7 @@ func (c *Connection) Stop() {
 
 	// 关闭socket链接
 	c.Conn.Close()
-	//关闭Writer
+	//关闭Writer heartbeat
 	c.ExitBuffChan <- true
 	if utils.GlobalObject.FakeData {
 		c.Fo.Close()
@@ -255,7 +299,14 @@ func (c *Connection) SendMsg(id uint16, sim string, fragflag uint8, data []byte)
 		return nil
 	}
 	//写回客户端
-	c.msgChan <- d
+	n, err := c.Conn.Write(d)
+	if err != nil {
+		fmt.Println("Send Data error:, ", err, " Conn Writer exit")
+		return err
+	}
+	c.NextSeq += 1
+
+	fmt.Printf("Send data succ! data = %d\n", n)
 
 	return nil
 }
@@ -296,4 +347,28 @@ func (c *Connection) RemoveProperty(key string) {
 	defer c.propertyLock.Unlock()
 
 	delete(c.property, key)
+}
+
+func (c *Connection) GetRespResult(id uint16, seq uint16) (byte, bool){
+	if v, ok := c.responseResult[id];ok{
+		if v1, ok := v[seq]; ok{
+			if c.TcpTimeout > 0 {
+				if time.Now().UTC().Unix() - v1.t > c.TcpTimeout{
+					return protocal.Failed, true
+				}
+			}
+
+			return v1.result, true
+		}
+	}
+
+	return 0, false
+}
+
+func (c *Connection) SetRespResult(id uint16, seq uint16, r byte) {
+	if _, ok := c.responseResult[id];!ok{
+		c.responseResult[id] = make(map[uint16]RespResult)
+	}
+
+	c.responseResult[id][seq] = RespResult{result:r, t:time.Now().UTC().Unix()}
 }

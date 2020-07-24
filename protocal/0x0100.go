@@ -57,7 +57,7 @@ func (t *PRegistResp) Packet() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (t *TRegistReqHandler2019) Do(msg *JT808Msg) (*JT808Msg, error) {
+func (t *TRegistReqHandler2019) Do(msg *JT808Msg) (*Jt808ResultMsg, error) {
 	err := t.Parse(msg.Body)
 	if err != nil{
 		return nil, err
@@ -74,10 +74,10 @@ func (t *TRegistReqHandler2019) Do(msg *JT808Msg) (*JT808Msg, error) {
 		return nil, err
 	}
 
-	return msg.CopyAndSet(PRegistResponse, ret), err
+	return &Jt808ResultMsg{Msg:msg.CopyAndSet(PRegistResponse, ret), NeedFeedBack:true}, err
 }
 
-func (t *TRegistReqHandler2013) Do(msg *JT808Msg) (*JT808Msg, error) {
+func (t *TRegistReqHandler2013) Do(msg *JT808Msg) (*Jt808ResultMsg, error) {
 	err := t.Parse(msg.Body)
 	if err != nil{
 		return nil, err
@@ -94,7 +94,7 @@ func (t *TRegistReqHandler2013) Do(msg *JT808Msg) (*JT808Msg, error) {
 		return nil, err
 	}
 
-	return msg.CopyAndSet(PRegistResponse, ret), err
+	return &Jt808ResultMsg{Msg:msg.CopyAndSet(PRegistResponse, ret), NeedFeedBack:true}, err
 }
 
 

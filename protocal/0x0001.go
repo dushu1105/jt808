@@ -15,26 +15,26 @@ const (
 	Warning = 4
 )
 
-type CommonRespHandler struct {
+type CommonResp struct {
 	BaseHandler
 	Seq 	uint16
 	Id 		uint16
 	Result 	byte
 }
 
-func (c *CommonRespHandler) Parse(data []byte) error {
+func (c *CommonResp) Parse(data []byte) error {
 	//用于终端通用应答
 	return common.Parse(data, c)
 }
 
-func (c *CommonRespHandler) Packet() ([]byte, error) {
+func (c *CommonResp) Packet() ([]byte, error) {
 	//用于平台通用应答
 	c.Id = PCommonResponse
 	return common.Packet(c)
 }
 
 
-func (c *CommonRespHandler) Do(msg *JT808Msg) (*JT808Msg, error) {
+func (c *CommonResp) Do(msg *JT808Msg) (*Jt808ResultMsg, error) {
 	err := c.Parse(msg.Body)
 	if err != nil{
 		return nil, err
@@ -57,5 +57,9 @@ func (c *CommonRespHandler) Do(msg *JT808Msg) (*JT808Msg, error) {
 	default:
 	}
 
-	return nil, err
+	var r CommonResp
+	r.Id = c.Id
+	r.Seq = c.Seq
+	r.Result = c.Result
+	return &Jt808ResultMsg{Result:r}, err
 }

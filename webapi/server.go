@@ -29,6 +29,11 @@ func RunWebServer(s *jtnet.Server) {
 	r.Use(addTcpServerInContext(s))
 	//r.POST("/create_rtc", CreateTalk)
 	r.POST("/jt808_8107", Jt808_8107)
+	r.POST("/jt808_8300", Jt808_8300)
+	r.POST("/jt808_8702", Jt808_8702)
+	r.POST("/jt808_9101", Jt808_9101)
+	r.POST("/jt808_9201", Jt808_9201)
+	r.POST("/jt808_9206", Jt808_9206)
 	//r.Static("/static/", "./static/")
 	r.Run(":8089")
 }
